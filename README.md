@@ -2,124 +2,84 @@
 
 This module is a Java-based RabbitMQ listener designed to integrate with Apache James. It listens for action requests on a queue, processes JSON messages, and sends a result status to a response queue.
 
----
-
-## 🚀 Current Features
-
-- Connects to RabbitMQ via `localhost:5672`
-- Listens on `james-actions` queue
-- Parses incoming JSON messages:
-  ```json
-  {
-    "action": "move",
-    "sourceMailboxID": "user1@example.com",
-    "sourceMessageID": "msg123",
-    "destinationMailboxID": "user2@example.com",
-    "hashID": "test001"
-  }
-  ```
-- Logs action and prepares for mailbox operation
-- Sends result to `james-results` queue:
-  ```json
-  {
-    "hashID": "test001",
-    "status": "success"
-  }
-  ```
-
----
-
-## 🛠️ Prerequisites
-
-- Java 11+
-- Maven
-- RabbitMQ running locally or via Docker:
-  ```bash
-  docker run -d --hostname my-rabbit --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3-management
-  ```
-
-Access RabbitMQ UI at [http://localhost:15672](http://localhost:15672)  
-Login: `guest` / `guest`
-
----
-
-## 🔧 Setup & Run
-
-### Build the project:
-
-```bash
-mvn clean compile
+# Payload structure
+## For MoveToTrash
 ```
-
-### Run the listener:
-
-```bash
-mvn exec:java -Dexec.mainClass="com.example.rabbitmq.RabbitMQListener"
-```
-
-You should see logs like:
-
-```
-[Init] Starting RabbitMQListener...
-[Receive] {...}
-[Process] ...
-[Send] {"hashID":"...","status":"success"}
-```
-
----
-
-## 🧪 Test a Message
-
-Use RabbitMQ Web UI or CLI to send this to `james-actions`:
-
-```json
 {
-  "action": "move",
-  "sourceMailboxID": "user1@example.com",
-  "sourceMessageID": "msg123",
-  "destinationMailboxID": "user2@example.com",
-  "hashID": "test001"
+  "action": "TRASH",
+  "sourceMailboxID": "#private:testuser2@domain.com:INBOX",
+  "sourceMessageID": "1",
+  "destinationMailboxID": null,
+  "hashID": "test-trash-1"
+}
+```
+## For MoveToOther
+```
+{
+  "action": "MOVE",
+  "sourceMailboxID": "#private:testuser1@domain.com:INBOX",
+  "sourceMessageID": "1",
+  "destinationMailboxID": "#private:testuser1@domain.com:ARCHIVE",
+  "hashID": "test-move-1"
+}
+```
+## Result
+
+```
+Success message
+{
+  "hashID": "test-trash-1",
+  "status": "SUCCESS",
+  "message": "Message successfully moved to trash",
+  "timestamp": 1748445808978
+}
+Failure message
+
+{
+  "hashID": "test-trash-1",
+  "status": "FAILED",
+  "message": "Cannot found mailbox",
+  "timestamp": 1748445808978
 }
 ```
 
-Check `james-results` queue for:
+# Detail design
 
-```json
-{ "hashID": "test001", "status": "success" }
+![img_4.png](img_4.png)
+
+# How to deployment
+## Prepare jar file
+1.Build jar file
 ```
-
----
-
-## 🧩 Next Steps
-
-- Integrate with Apache James `MailboxManager`
-- Locate and move/trash messages based on input
-- Add error handling for mailbox failures
-- Prepare extension JAR for deployment
-
----
-
-## 📁 File Structure
-
+mvn clean compile package
 ```
-src/
-└── main/
-    └── java/
-        └── com/
-            └── example/
-                └── rabbitmq/
-                    └── RabbitMQListener.java
+2.Add jar file to folder
 ```
-
----
+/root/extensions-jars
+```
+## Create the configuration file
+1.Create the rabbitmq.properties and add it to /root/conf folder
+```
+# RabbitMQ Extension Configuration
+rabbitmq.host=rabbitmq
+rabbitmq.port=5672
+rabbitmq.username=james
+rabbitmq.password=secret
+rabbitmq.virtualHost=/
+rabbitmq.inputQueue=james.email.actions
+rabbitmq.outputExchange=james.email.results
+rabbitmq.outputRoutingKey=result
+```
+2.Update or create file extensions.properties and add it to /root/conf folder
+```
+# Enable the RabbitMQ extension
+guice.extension.module=com.example.rabbitmq.JamesRabbitMQModule
+```
 
 # How to test
 ```
 # Build with assembly plugin (default)
 mvn clean compile package
-
-# Or build with shade plugin
-mvn clean compile package -Pshade
 
 # Run docker
 docker compose up -d
