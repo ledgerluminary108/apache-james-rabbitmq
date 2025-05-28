@@ -15,6 +15,9 @@ import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.model.MessageRange;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Optional;
+
 @Singleton
 public class EmailManagementService {
     private static final Logger LOGGER = LoggerFactory.getLogger(EmailManagementService.class);
@@ -55,18 +58,15 @@ public class EmailManagementService {
                     "Destination mailbox ID is required for move action");
         }
         MailboxSession session = null;
-        MailboxManager mailboxManager = mailboxManagerProvider.get();;
+        MailboxManager mailboxManager = mailboxManagerProvider.get();
         try {
             LOGGER.info("Start processing request session");
-            // Create system session with Username instead of String
-            Username sourceUser = Username.of(request.getSourceMailboxID());
-            Username destUser = Username.of(request.getDestinationMailboxID());
-            session = mailboxManager.createSystemSession(sourceUser);
+            MailboxPath sourcePath = parseMailboxID(request.getSourceMailboxID())
+                    .orElseThrow(() -> new IllegalArgumentException("Source mailbox ID is not found with " + request.getSourceMailboxID()));
+            MailboxPath destPath = parseMailboxID(request.getDestinationMailboxID())
+                    .orElseThrow(() -> new IllegalArgumentException("Destination mailbox is not found with " + request.getDestinationMailboxID()));
+            session = mailboxManager.createSystemSession(sourcePath.getUser());
             mailboxManager.startProcessingRequest(session);
-            MailboxPath sourcePath = getSourceMailbox(request, sourceUser);
-            // Get destination mailbox
-            LOGGER.info("Get dest mailbox ID: {}", request.getDestinationMailboxID());
-            MailboxPath destPath = MailboxPath.forUser(destUser, "INBOX");
             MessageUid messageUid = MessageUid.of(Long.parseLong(request.getSourceMessageID()));
             LOGGER.info("Start move mail {} from source {} to dest {}", messageUid, request.getSourceMailboxID(),
                     request.getDestinationMailboxID());
@@ -102,23 +102,19 @@ public class EmailManagementService {
         MailboxSession session = null;
         MailboxManager mailboxManager = mailboxManagerProvider.get();
         try {
-            // Create system session with Username instead of String
-            Username sourceUser = Username.of(request.getSourceMailboxID());
-            session = mailboxManager.createSystemSession(sourceUser);
+            MailboxPath sourcePath = parseMailboxID(request.getSourceMailboxID())
+                    .orElseThrow(() -> new IllegalArgumentException("Source mailbox ID is not found with " + request.getSourceMailboxID()));
+            session = mailboxManager.createSystemSession(sourcePath.getUser());
             mailboxManager.startProcessingRequest(session);
-            // Get source mailbox
-            MailboxPath sourcePath = getSourceMailbox(request, sourceUser);
             MessageUid messageUid = MessageUid.of(Long.parseLong(request.getSourceMessageID()));
-            MailboxPath trashPath = MailboxPath.forUser(sourceUser, "Trash");
+            MailboxPath trashPath = MailboxPath.forUser(sourcePath.getUser(), "TRASH");
             mailboxManager.moveMessages(
                     MessageRange.one(messageUid),
                     sourcePath,
                     trashPath,
                     session);
-
             LOGGER.info("Successfully trashed message {} from mailbox {}",
                     request.getSourceMessageID(), request.getSourceMailboxID());
-
             return EmailActionResponse.success(request.getHashID(),
                     "Message successfully moved to trash");
 
@@ -130,6 +126,27 @@ public class EmailManagementService {
             if (session != null) {
                 mailboxManager.endProcessingRequest(session);
             }
+        }
+    }
+
+    private Optional<MailboxPath> parseMailboxID(String mailboxID) {
+        try {
+            if (mailboxID == null || mailboxID.trim().isEmpty()) {
+                LOGGER.error("Mailbox ID is null or empty");
+                return Optional.empty();
+            }
+
+            LOGGER.debug("Parsing mailbox ID: {}", mailboxID);
+            if (mailboxID.startsWith("#")) {
+                //remove this #
+                mailboxID = mailboxID.substring(1);
+            }
+            return MailboxPath.parseEscaped(mailboxID);
+
+
+        } catch (Exception e) {
+            LOGGER.error("Error parsing mailbox ID: {}", mailboxID, e);
+            return Optional.empty();
         }
     }
 }
