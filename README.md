@@ -124,6 +124,59 @@ mvn clean compile package -Pshade
 # Run docker
 docker compose up -d
 ```
+# Test scenario
+
+Create two users
+```
+curl --location --request PUT 'http://localhost:8000/users/testuser1@localhost' \
+--header 'Content-Type: application/json' \
+--data '{"password":"testpass"}'
+
+curl --location --request PUT 'http://localhost:8000/users/testuser2@localhost' \
+--header 'Content-Type: application/json' \
+--data '{"password":"testpass"}'
+```
+Create mailbox
+
+```
+curl --location --request PUT 'http://localhost:8000/users/testuser@localhost/mailboxes/INBOX'
+curl --location --request PUT 'http://localhost:8000/users/testuser@localhost/mailboxes/TRASH'
+curl --location --request PUT 'http://localhost:8000/users/testuser2@localhost/mailboxes/INBOX'
+curl --location --request PUT 'http://localhost:8000/users/testuser2@localhost/mailboxes/TRASH'
+```
+using telnet to send message
+```
+telnet localhost 25
+HELO localhost
+MAIL FROM:<testuser@localhost>
+RCPT TO:<testuser2@localhost>
+DATA
+Subject: Hello from Telnet
+
+This is a test.
+.
+QUIT
+
+```
+
+Create the Queue to fetch data for test from Exchange
+
+![img.png](img.png)
+
+Binding exchange result to queue
+
+![img_1.png](img_1.png)
+
+
+Test send message
+  Go to url: http://localhost:15672/#/queues/%2F/james.email.actions
+Publish message
+![img_2.png](img_2.png)
+
+Go back to QUEUE_TEST to get the result
+
+![img_3.png](img_3.png)
+
 
 ## 📝 License
 
