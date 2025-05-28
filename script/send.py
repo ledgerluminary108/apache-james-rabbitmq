@@ -21,28 +21,28 @@ def create_test_cases():
             "destinationMailboxID": "#private:testuser@localhost:Archive",
             "hashID": "test-move-" + str(int(time.time()))
         },
-        {
-            "action": "MOVE",
-            "sourceMailboxID": "#private:testuser@localhost:INBOX",
-            "sourceMessageID": "3",
-            "destinationMailboxID": "#private:testuser@localhost:Work",
-            "hashID": "test-move-work-" + str(int(time.time()))
-        },
-        {
-            "action": "FLAG",
-            "sourceMailboxID": "#private:testuser@localhost:INBOX",
-            "sourceMessageID": "4",
-            "destinationMailboxID": None,
-            "hashID": "test-flag-" + str(int(time.time())),
-            "flagName": "Important"
-        },
-        {
-            "action": "MARK_READ",
-            "sourceMailboxID": "#private:testuser@localhost:INBOX",
-            "sourceMessageID": "5",
-            "destinationMailboxID": None,
-            "hashID": "test-read-" + str(int(time.time()))
-        }
+        # {
+        #     "action": "MOVE",
+        #     "sourceMailboxID": "#private:testuser@localhost:INBOX",
+        #     "sourceMessageID": "3",
+        #     "destinationMailboxID": "#private:testuser@localhost:Work",
+        #     "hashID": "test-move-work-" + str(int(time.time()))
+        # },
+        # {
+        #     "action": "FLAG",
+        #     "sourceMailboxID": "#private:testuser@localhost:INBOX",
+        #     "sourceMessageID": "4",
+        #     "destinationMailboxID": None,
+        #     "hashID": "test-flag-" + str(int(time.time())),
+        #     "flagName": "Important"
+        # },
+        # {
+        #     "action": "MARK_READ",
+        #     "sourceMailboxID": "#private:testuser@localhost:INBOX",
+        #     "sourceMessageID": "5",
+        #     "destinationMailboxID": None,
+        #     "hashID": "test-read-" + str(int(time.time()))
+        # }
     ]
 
     return test_cases
@@ -56,7 +56,7 @@ def send_test_messages():
         connection = pika.BlockingConnection(
             pika.ConnectionParameters('localhost', 5672, '/', credentials)
         )
-        channel = connection.createChannel()
+        channel = connection.channel()
 
         # Ensure queue exists
         channel.queue_declare(queue='james.email.actions', durable=True)
