@@ -113,6 +113,18 @@ src/
 
 ---
 
+# How to test
+```
+# Build with assembly plugin (default)
+mvn clean compile package
+
+# Or build with shade plugin
+mvn clean compile package -Pshade
+
+# Run docker
+docker compose up -d
+```
+
 ## 📝 License
 
 MIT License
