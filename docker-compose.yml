@@ -13,7 +13,7 @@ services:
       - "8000:8000"
     volumes:
       - ./target/james-extension-rabbitmq-1.0-SNAPSHOT.jar:/root/extensions-jars/james-extension-rabbitmq-1.0-SNAPSHOT.jar:ro
-      - ./conf:/root/conf:ro
+      - ./conf:/root/conf:rw
       - james-data:/root/var
     environment:
       - rabbitmq.host=rabbitmq
