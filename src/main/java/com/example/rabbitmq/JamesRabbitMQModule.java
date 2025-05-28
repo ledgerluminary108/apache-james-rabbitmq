@@ -40,7 +40,7 @@ public class JamesRabbitMQModule extends AbstractModule {
                     .outputRoutingKey(getConfigValue(props, "rabbitmq.outputRoutingKey", "result"))
                     .build();
 
-            LOGGER.error("RabbitMQ Configuration loaded: host={}, port={}, username={}, queue={}",
+            LOGGER.info("RabbitMQ Configuration loaded: host={}, port={}, username={}, queue={}",
                     config.getHost(), config.getPort(), config.getUsername(), config.getInputQueue());
 
             return config;
