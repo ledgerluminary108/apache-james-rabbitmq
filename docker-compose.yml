@@ -13,7 +13,16 @@ services:
       - "8000:8000"
     volumes:
       - ./target/james-extension-rabbitmq-1.0-SNAPSHOT.jar:/root/extensions-jars/james-extension-rabbitmq-1.0-SNAPSHOT.jar:ro
-      - ./conf:/root/conf:rw
+      - ./conf/extensions.properties:/root/conf/extensions.properties:rw
+      - ./conf/james-server.properties:/root/conf/james-server.properties:rw
+      - ./conf/rabbitmq.properties:/root/conf/rabbitmq.properties:rw
+      - ./conf/usersrepository.xml:/root/conf/usersrepository.xml:rw
+      - ./conf/webadmin.properties:/root/conf/webadmin.properties:rw
+      - ./conf/imapserver.xml:/root/conf/imapserver.xml:rw
+      - ./conf/jmap.properties:/root/conf/jmap.properties:rw
+      - ./conf/managesieveserver.xml:/root/conf/managesieveserver.xml:rw
+      - ./conf/pop3server.xml:/root/conf/pop3server.xml:rw
+      - ./conf/smtpserver.xml:/root/conf/smtpserver.xml:rw
       - james-data:/root/var
     environment:
       - rabbitmq.host=rabbitmq

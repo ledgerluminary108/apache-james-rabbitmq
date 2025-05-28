@@ -130,23 +130,6 @@ public class EmailManagementService {
     }
 
     private Optional<MailboxPath> parseMailboxID(String mailboxID) {
-        try {
-            if (mailboxID == null || mailboxID.trim().isEmpty()) {
-                LOGGER.error("Mailbox ID is null or empty");
-                return Optional.empty();
-            }
-
-            LOGGER.debug("Parsing mailbox ID: {}", mailboxID);
-            if (mailboxID.startsWith("#")) {
-                //remove this #
-                mailboxID = mailboxID.substring(1);
-            }
-            return MailboxPath.parseEscaped(mailboxID);
-
-
-        } catch (Exception e) {
-            LOGGER.error("Error parsing mailbox ID: {}", mailboxID, e);
-            return Optional.empty();
-        }
+        return MailboxPath.parseEscaped(mailboxID);
     }
 }
