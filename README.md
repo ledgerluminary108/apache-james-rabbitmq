@@ -7,7 +7,7 @@ This module is a Java-based RabbitMQ listener designed to integrate with Apache 
 ```
 {
   "action": "TRASH",
-  "sourceMailboxID": "#private:testuser2@domain.com:INBOX",
+  "sourceMailboxID": "1",
   "sourceMessageID": "1",
   "destinationMailboxID": null,
   "hashID": "test-trash-1"
@@ -17,9 +17,9 @@ This module is a Java-based RabbitMQ listener designed to integrate with Apache 
 ```
 {
   "action": "MOVE",
-  "sourceMailboxID": "#private:testuser1@domain.com:INBOX",
+  "sourceMailboxID": "1",
   "sourceMessageID": "1",
-  "destinationMailboxID": "#private:testuser1@domain.com:ARCHIVE",
+  "destinationMailboxID": "1",
   "hashID": "test-move-1"
 }
 ```
@@ -131,7 +131,7 @@ Binding exchange result to queue
 Test send message
   Go to url: http://localhost:15672/#/queues/%2F/james.email.actions
 Publish message
-![img_2.png](img_2.png)
+![img_5.png](img_5.png)
 
 Go back to QUEUE_TEST to get the result
 

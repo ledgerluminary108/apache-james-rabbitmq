@@ -1,15 +1,26 @@
-version: '3.8'
+version: '3'
+
 services:
+
   james:
-    image: apache/james:memory-3.8.0  # Memory version doesn't need OpenSearch
-    container_name: james-server
+    depends_on:
+      rabbitmq:
+        condition: service_started
+    image: apache/james:jpa-3.8.0
+    container_name: james
     hostname: james.local
+    command:
+      - --generate-keystore
+    networks:
+      - james
     ports:
+      - "80:80"
       - "25:25"
+      - "110:110"
       - "143:143"
-      - "993:993"
       - "465:465"
       - "587:587"
+      - "993:993"
       - "8000:8000"
     volumes:
       - ./target/james-extension-rabbitmq-1.0-SNAPSHOT.jar:/root/extensions-jars/james-extension-rabbitmq-1.0-SNAPSHOT.jar:ro
@@ -17,47 +28,43 @@ services:
       - ./conf/james-server.properties:/root/conf/james-server.properties:rw
       - ./conf/rabbitmq.properties:/root/conf/rabbitmq.properties:rw
       - ./conf/usersrepository.xml:/root/conf/usersrepository.xml:rw
+      - ./conf/logback.xml:/root/conf/logback.xml:rw
       - ./conf/webadmin.properties:/root/conf/webadmin.properties:rw
       - ./conf/imapserver.xml:/root/conf/imapserver.xml:rw
       - ./conf/jmap.properties:/root/conf/jmap.properties:rw
       - ./conf/managesieveserver.xml:/root/conf/managesieveserver.xml:rw
       - ./conf/pop3server.xml:/root/conf/pop3server.xml:rw
       - ./conf/smtpserver.xml:/root/conf/smtpserver.xml:rw
-      - james-data:/root/var
+      - ./conf/james-database.properties:/root/conf/james-database.properties:rw
+      - ./mariadb-java-client-2.7.2.jar:/root/libs/james-jdbc-driver.jar
     environment:
       - rabbitmq.host=rabbitmq
       - rabbitmq.port=5672
       - rabbitmq.username=james
       - rabbitmq.password=secret
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-    networks:
-      - james-network
 
   rabbitmq:
-    image: rabbitmq:3.12-management
-    container_name: james-rabbitmq
+    image: rabbitmq:3.13.3-management
     environment:
       - RABBITMQ_DEFAULT_USER=james
       - RABBITMQ_DEFAULT_PASS=secret
     ports:
       - "5672:5672"
       - "15672:15672"
-    volumes:
-      - rabbitmq-data:/var/lib/rabbitmq
     networks:
-      - james-network
-    healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "ping"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-
-volumes:
-  james-data:
-  rabbitmq-data:
-
+      - james
+  mariadb:
+    image: mariadb:10.6
+    environment:
+      - MARIADB_ROOT_PASSWORD=test
+      - MARIADB_DATABASE=test
+      - MARIADB_USER=test
+      - MARIADB_PASSWORD=test
+    networks:
+      - james
+    volumes:
+      - maria-data:/var/lib/mysql
 networks:
-  james-network:
-    driver: bridge
+  james:
+volumes:
+  maria-data:

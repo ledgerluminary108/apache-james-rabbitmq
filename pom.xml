@@ -70,6 +70,12 @@
             <artifactId>javax.annotation-api</artifactId>
             <version>1.3.2</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.james/apache-james-mailbox-jpa -->
+        <dependency>
+            <groupId>org.apache.james</groupId>
+            <artifactId>apache-james-mailbox-jpa</artifactId>
+            <version>${james.version}</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>

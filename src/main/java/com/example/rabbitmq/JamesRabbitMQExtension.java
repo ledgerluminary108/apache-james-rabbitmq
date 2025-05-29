@@ -8,7 +8,6 @@ import com.google.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 
 @Singleton
@@ -61,7 +60,13 @@ public class JamesRabbitMQExtension {
 
             started = true;
             LOGGER.info("James RabbitMQ Extension started successfully");
-
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                try {
+                    cleanup();
+                } catch (Exception e) {
+                    System.err.println("❌ Failed to close RabbitMQ connection: " + e.getMessage());
+                }
+            }));
         } catch (Exception e) {
             LOGGER.error("Failed to start James RabbitMQ Extension", e);
             // Attempt cleanup on failure
@@ -70,12 +75,6 @@ public class JamesRabbitMQExtension {
         }
     }
 
-    @PreDestroy
-    public void shutdown() {
-        LOGGER.info("Shutting down James RabbitMQ Extension...");
-        cleanup();
-        LOGGER.info("James RabbitMQ Extension shutdown complete");
-    }
 
     private void cleanup() {
         started = false;
@@ -97,15 +96,5 @@ public class JamesRabbitMQExtension {
                 LOGGER.error("Error stopping publisher service", e);
             }
         }
-    }
-
-    public boolean isStarted() {
-        return started;
-    }
-
-    // Optional: Health check method that could be exposed via JMX or web admin
-    public String getStatus() {
-        return String.format("RabbitMQ Extension [Started: %s, Config: %s]",
-                started, config.toString());
     }
 }
