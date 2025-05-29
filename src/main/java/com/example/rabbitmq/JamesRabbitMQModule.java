@@ -15,13 +15,13 @@ import java.util.Properties;
 
 public class JamesRabbitMQModule extends AbstractModule {
     private static final Logger LOGGER = LoggerFactory.getLogger(JamesRabbitMQModule.class);
+
     @Override
     protected void configure() {
         bind(RabbitMQExtensionConfiguration.class).toProvider(ConfigurationProvider.class).in(Singleton.class);
         bind(EmailManagementService.class).in(Singleton.class);
         bind(RabbitMQPublisherService.class).in(Singleton.class);
         bind(RabbitMQConsumerService.class).in(Singleton.class);
-        // Eagerly instantiate the extension so @PostConstruct is called
         bind(JamesRabbitMQExtension.class).asEagerSingleton();
     }
 
@@ -45,6 +45,7 @@ public class JamesRabbitMQModule extends AbstractModule {
 
             return config;
         }
+
         private Properties loadPropertiesFile() {
             Properties props = new Properties();
 
