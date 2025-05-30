@@ -6,7 +6,7 @@ This module is a Java-based RabbitMQ listener designed to integrate with Apache 
 ## For MoveToTrash
 ```
 {
-  "action": "TRASH",
+  "action": "Trash",
   "sourceMailboxID": "1",
   "sourceMessageID": "1",
   "destinationMailboxID": null,
@@ -16,7 +16,7 @@ This module is a Java-based RabbitMQ listener designed to integrate with Apache 
 ## For MoveToOther
 ```
 {
-  "action": "MOVE",
+  "action": "Move",
   "sourceMailboxID": "1",
   "sourceMessageID": "1",
   "destinationMailboxID": "1",
